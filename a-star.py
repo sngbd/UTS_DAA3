@@ -31,24 +31,25 @@ class Box:
     def set_heuristic(self, target_box):
         self.heuristic = abs(self.x - target_box.x) + abs(self.y - target_box.y)
 
-# Create Grid
 create_grid(Box) 
 
-# Set Neighbours
 set_neighbours()
 
-start_box = grid[0][0]
-start_box.start = True
-start_box.visited = True
-queue.append(start_box)
-
-def a_star_algorithm(target_box):
+def a_star_algorithm(start_box, target_box):
     current_box = queue.pop(0)
     current_box.visited = True
     if current_box == target_box:
         while current_box.prior != start_box:
             path.append(current_box.prior)
             current_box = current_box.prior
+        start_grid = (start_box.x, start_box.y)
+        target_grid = (target_box.x, target_box.y)
+        print("Start box:", start_grid)
+        print("Target box:", target_grid) 
+        path_grid = []
+        for p in reversed(path):
+            path_grid.append((p.x, p.y))
+        print("Path length:", len(path_grid))
         return False
     else:
         for neighbour in current_box.neighbours:
@@ -59,47 +60,64 @@ def a_star_algorithm(target_box):
                 queue.sort(key=lambda q: q.heuristic)
     return True
 
+
 def main():
     begin_search = False
-    target_box_set = False
     searching = True
     target_box = None
+    start_box = None
+    steps = 0
+    done = False
+
+    if (len(sys.argv) > 1 and sys.argv[1] == "--maze"):
+        start_box, target_box = init_maze()
+        for i in range(COLUMNS):
+            for j in range(ROWS):
+                grid[i][j].set_heuristic(target_box)
 
     while True:
         for event in pygame.event.get():
-            # Quit Window
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.MOUSEMOTION:
+                if begin_search:
+                    continue
+
                 x = pygame.mouse.get_pos()[0]
                 y = pygame.mouse.get_pos()[1]
-                # Draw Wall
-                if event.buttons[0]:
-                    i = x // BOX_WIDTH
-                    j = y // BOX_HEIGHT
+                i = x // BOX_WIDTH
+                j = y // BOX_HEIGHT
+
+                if event.buttons[0] and not grid[i][j].start and not grid[i][j].target and not grid[i][j].wall:
                     grid[i][j].wall = True
-                # Set Target
-                if event.buttons[2] and not target_box_set:
-                    i = x // BOX_WIDTH
-                    j = y // BOX_HEIGHT
+                if event.buttons[2] and not start_box and not grid[i][j].target and not grid[i][j].wall:
+                    start_box = grid[i][j]
+                    start_box.start = True
+                    start_box.visited = True
+                    queue.append(start_box)
+                elif event.buttons[2] and not target_box and not grid[i][j].start and not grid[i][j].wall:
                     target_box = grid[i][j]
                     target_box.target = True
-                    target_box_set = True
                     for i in range(COLUMNS):
                         for j in range(ROWS):
                             grid[i][j].set_heuristic(target_box)
-            # Start Algorithm
-            if event.type == pygame.KEYDOWN and target_box_set:
+
+            if event.type == pygame.KEYDOWN and target_box:
                 if event.key == pygame.K_SPACE:
                     begin_search = True
+
         if begin_search:
             if len(queue) > 0 and searching:
-                searching = a_star_algorithm(target_box)
+                searching = a_star_algorithm(start_box, target_box)
+                steps += 1
             else:
                 if searching:
                     searching = False
-                    print('There is no solution.')
+                    print("There is no solution.")
+                if not done:
+                    done = True
+                    print("Steps:", steps)
 
         WINDOW.fill(BLACK)
         
