@@ -24,7 +24,6 @@ YELLOW = (200, 200, 0)
 grid = []
 queue = []
 path = []
-wall = []
 
 def create_grid(Box):
     for i in range(COLUMNS):
@@ -91,5 +90,4 @@ def init_maze():
     target_box.target = True
     for w in maze_wall:
         grid[w[0]][w[1]].wall = True
-        wall.append((w[0], w[1]))
     return start_box, target_box

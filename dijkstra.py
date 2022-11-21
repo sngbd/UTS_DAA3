@@ -45,7 +45,7 @@ def dijkstra_algorithm(start_box, target_box):
         path_grid = []
         for p in reversed(path):
             path_grid.append((p.x, p.y))
-        print("Shortest path:", len(path_grid))
+        print("Path length:", len(path_grid))
         return False
     else:
         for neighbour in current_box.neighbours:
@@ -82,7 +82,6 @@ def main():
 
                 if event.buttons[0] and not grid[i][j].start and not grid[i][j].target:
                     grid[i][j].wall = True
-                    wall.append((grid[i][j].x, grid[i][j].y))
                 if event.buttons[2] and not start_box and not grid[i][j].target and not grid[i][j].wall:
                     start_box = grid[i][j]
                     start_box.start = True
